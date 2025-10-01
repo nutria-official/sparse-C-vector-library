@@ -34,8 +34,8 @@ void pop(vector *x);
 void *read(vector *x, const size_t INDEX);
 void insert(vector *x, const size_t INDEX, const void *DATA);
 void freeVector(vector *x);
-search *indexCheck(vector *x,
-                   const size_t INDEX); // Checks if an index is occupied.
+search *find(vector *x,
+                   const size_t INDEX); // Fetches the data of a given index: It's index and a pointer to its data.
 bool reallocationCheck(vector *x, const size_t RESIZE_SIZE,
                        const size_t RESIZE_AMOUNT); // Checks if a given vector
                                                     // should be resized or not.
