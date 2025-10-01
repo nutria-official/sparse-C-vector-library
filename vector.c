@@ -5,9 +5,8 @@ vector *vectorInit(const size_t DATA_TYPE) {
   if (allocationValidation(x) == false) {
     return NULL;
   }
-  x->data_size =
-      DATA_TYPE + sizeof(size_t); // + sizeof(size_t) so there's space for the
-                                  // element and its index.
+  x->data_size = DATA_TYPE + sizeof(size_t); // + sizeof(size_t) so there's
+                                             // space for the elements index.
 
   x->data = malloc(INITIALSIZE * x->data_size);
   if (allocationValidation(x->data) == false) {
@@ -23,12 +22,13 @@ vector *vectorInit(const size_t DATA_TYPE) {
 
 void push(vector *x, const void *DATA) {
   if (reallocationCheck(x, 1, 1) == false) {
+    perror("Reallocation failed!");
     return;
   }
   void *target = x->data + (x->size * x->data_size);
   memcpy(target, DATA, x->data_size - sizeof(size_t));
   target -= sizeof(size_t); // We now want to paste the index.
-  memcpy(target, &x->current_index,
+  memcpy(target, x->current_index,
          sizeof(size_t)); // Pastes the index right to the data.
   x->size++;
   x->current_index++;
@@ -39,22 +39,24 @@ void push(vector *x, const void *DATA) {
 
 void pop(vector *x) {
   if (x->size == 0) {
-    perror("No values left!");
+    perror("The vector is empty!");
     return;
   }
   x->size--;
-  x->largest_index--;
+  search *new_largest_index = find(x, x->size - 1);
+  x->largest_index = new_largest_index->index;
+
   reallocationCheck(x, RESIZESIZE, RESIZEAMOUNT);
   return;
 }
 
 void *read(vector *x, const size_t INDEX) {
-  search *receivedSearch = indexCheck(x, INDEX);
-  return receivedSearch->index;
+  search *read_data = find(x, INDEX);
+  return *read_data->index;
 }
 
 void insert(vector *x, const size_t INDEX, const void *DATA) {
-  search *receivedSearch = indexCheck(x, INDEX);
+  search *receivedSearch = find(x, INDEX);
   if (receivedIndex->index == NULL) {
     for (size_t i = 0; i < INDEX; i++) {
     }
@@ -87,7 +89,7 @@ bool reallocationCheck(vector *x, const size_t RESIZE_SIZE,
   return false;
 }
 
-search *indexCheck(vector *x, const size_t INDEX) {
+search *find(vector *x, const size_t INDEX) {
   search *thisSearch;
   size_t *checkedIndex =
       x->data + x->data_size * (i + 1) -
