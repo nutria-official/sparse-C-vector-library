@@ -1,4 +1,4 @@
-#include "vector.h"
+#include "main.h"
 
 bool memory_realloc(Vector *vec, const size_t RESIZE_SIZE,
                     const float RESIZE_AMOUNT) {

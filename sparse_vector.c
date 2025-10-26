@@ -1,4 +1,4 @@
-#include "vector.h"
+#include "main.h"
 #include <string.h>
 
 Vector *vectorInit(const size_t DATA_TYPE) {
