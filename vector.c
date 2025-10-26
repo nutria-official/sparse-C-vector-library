@@ -1,119 +1,77 @@
 #include "vector.h"
+#include <string.h>
 
-vector *vectorInit(const size_t DATA_TYPE) {
-  vector *x = malloc(sizeof(vector));
-  if (allocationValidation(x) == false) {
+Vector *vectorInit(const size_t DATA_TYPE) {
+  Vector *vec = malloc(sizeof(Vector));
+  if (memory_alloc(vec) == false) {
     return NULL;
   }
-  x->data_size = DATA_TYPE + sizeof(size_t); // + sizeof(size_t) so there's
-                                             // space for the elements index.
-
-  x->data = malloc(INITIALSIZE * x->data_size);
-  if (allocationValidation(x->data) == false) {
-    free(x);
+  vec->data_size = DATA_TYPE;
+  vec->data = malloc(INITIALSIZE * vec->data_size);
+  if (memory_alloc(vec->data) == false) {
+    free(vec);
     return NULL;
   }
-  x->capacity = INITIALSIZE;
-  x->size = 0;
-  x->largest_index = 0;
-  x->current_index = 0;
-  return x;
+  vec->index = malloc(INITIALSIZE * sizeof(size_t));
+  if (memory_alloc(vec->index) == false) {
+    free(vec);
+    return NULL;
+  }
+  vec->capacity = INITIALSIZE;
+  vec->size = 0;
+  vec->largest_index = vec->index;
+  return vec;
+}
+void *read(const Vector *vec, const size_t KEY) {
+  size_t *index = binary_search(vec, KEY);
+  void *data = vec->data + (*index * vec->data_size);
+  return data;
 }
 
-void push(vector *x, const void *DATA) {
-  if (reallocationCheck(x, 1, 1) == false) {
-    perror("Reallocation failed!");
-    return;
+void insert(Vector *vec, const size_t KEY, const void *DATA) {
+  size_t *index = binary_search(vec, KEY);
+  if (index == NULL) { // Checks whether the KEY-index already has memory.
+    if (KEY > *vec->largest_index) {
+      memcpy(vec->data + (vec->data_size * vec->size), DATA, vec->data_size);
+      memcpy(vec->index + (sizeof(size_t) * vec->size), &KEY, sizeof(size_t));
+      vec->largest_index = vec->index + (sizeof(size_t) * vec->size);
+    } else {
+      // Make this later.
+    }
+    vec->size++;
+    memory_realloc(vec, 1, 0.5);
+  } else {
+    memcpy(vec->data + (vec->data_size * *index), DATA, vec->data_size);
+    memcpy(vec->index + (sizeof(size_t) * vec->size), &KEY, sizeof(size_t));
   }
-  void *target = x->data + (x->size * x->data_size);
-  memcpy(target, DATA, x->data_size - sizeof(size_t));
-  target -= sizeof(size_t); // We now want to paste the index.
-  memcpy(target, x->current_index,
-         sizeof(size_t)); // Pastes the index right to the data.
-  x->size++;
-  x->current_index++;
-  if (x->largest_index < x->current_index) {
-    x->largest_index = x->current_index;
-  }
-}
-
-void pop(vector *x) {
-  if (x->size == 0) {
-    perror("The vector is empty!");
-    return;
-  }
-  x->size--;
-  search *new_largest_index = find(x, x->size - 1);
-  x->largest_index = new_largest_index->index;
-
-  reallocationCheck(x, RESIZESIZE, RESIZEAMOUNT);
   return;
 }
 
-void *read(vector *x, const size_t INDEX) {
-  search *read_data = find(x, INDEX);
-  return *read_data->index;
-}
+bool remove_data(Vector *vec, const size_t KEY) {
+  size_t *index = binary_search(vec, KEY);
+  if (index == NULL) {
+    perror("Element does not exist\n");
+    return false;
+  } else {
+    vec->size--;
+    for (size_t i = *index; i < vec->size; i++) {
+      memcpy(vec->data + (i * vec->data_size),
+             vec->data + (i + 1) * vec->data_size, vec->data_size);
 
-void insert(vector *x, const size_t INDEX, const void *DATA) {
-  search *receivedSearch = find(x, INDEX);
-  if (receivedIndex->index == NULL) {
-    for (size_t i = 0; i < INDEX; i++) {
+      memcpy(vec->index + (i * sizeof(size_t)),
+             vec->index + (i + 1) * sizeof(size_t), sizeof(size_t));
     }
-    x->capacity =
+    memory_realloc(vec, RESIZESIZE, RESIZEAMOUNT);
+    return true;
   }
 }
 
-void freeVector(vector *x) {
-  if (x == NULL) {
+void freeVector(Vector *vec) {
+  if (vec == NULL) {
     perror("Vector already deleted!");
     return;
   }
-  free(x->data);
-  free(x);
-}
-
-bool reallocationCheck(vector *x, const size_t RESIZE_SIZE,
-                       const size_t RESIZE_AMOUNT) {
-  if (x->size <= x->capacity / RESIZE_SIZE) {
-    x->capacity *= 2;
-    void *temp = malloc(x->capacity * x->data_size);
-    memcpy(temp, x->data, ceil(x->capacity / RESIZE_AMOUNT) * x->data_size);
-    // void *temp = realloc(x->data, ceil(x->capacity/RESIZE_AMOUNT) *
-    // x->data_size);
-    if (allocationValidation(temp) == false) {
-      return false;
-    }
-    return true;
-  }
-  return false;
-}
-
-search *find(vector *x, const size_t INDEX) {
-  search *thisSearch;
-  size_t *checkedIndex =
-      x->data + x->data_size * (i + 1) -
-      sizeof(size_t); // Pointer to the index of the checked element.
-  for (size_t i = 0; i < x->size;
-       i++) { // Linear search time, please remember to fix this later.
-    checkedIndex = x->data + x->data_size * (i + 1) - sizeof(size_t);
-    if (INDEX == *value) {
-      thisSearch.data = x->data + (INDEX * x->data_size);
-      thisSearch.index = i;
-      return thisSearch;
-    }
-    continue;
-  }
-  // perror("Invalid index\n");
-  thisSearch.data = NULL;
-  thisSearch.index = NULL;
-  return thisSearch;
-}
-
-bool allocationValidation(void *x) {
-  if (x == NULL) {
-    perror("Memory allocation failed\n");
-    return false;
-  }
-  return true;
+  free(vec->data);
+  free(vec->index);
+  free(vec);
 }
