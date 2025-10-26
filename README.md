@@ -1,4 +1,4 @@
 # What is this?
-This is a dynamic vector library for the programming language C, to (currently) store pointers to a given datatype.
+This is a sparse-vector inspired library for the programming language C, which can store any static-sized datatype.
 # Why is this?
-This was made for educational purposes, so that i could learn more about dynamic memory in C.
+This is created to be the datastructure for the columns and rows in the exCel project i'm working on.
