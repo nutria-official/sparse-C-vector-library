@@ -1,13 +1,13 @@
 #include "main.h"
 
-bool memory_realloc(Vector *vec, const size_t RESIZE_SIZE,
+bool memory_realloc(Vector *vec, const int RESIZE_SIZE,
                     const float RESIZE_AMOUNT) {
   if (vec->size <= vec->capacity / RESIZE_SIZE) {
     vec->capacity = ceil(vec->capacity / RESIZE_AMOUNT);
     void *temp_d = malloc(vec->capacity * vec->data_size);
-    void *temp_i = malloc(vec->capacity * sizeof(size_t));
+    void *temp_i = malloc(vec->capacity * sizeof(int));
     memcpy(temp_d, vec->data, vec->capacity * vec->data_size);
-    memcpy(temp_i, vec->index, vec->capacity * sizeof(size_t));
+    memcpy(temp_i, vec->index, vec->capacity * sizeof(int));
     free(vec->data);
     free(vec->index);
     vec->data = temp_d;
@@ -21,21 +21,20 @@ bool memory_realloc(Vector *vec, const size_t RESIZE_SIZE,
   return true;
 }
 
-size_t *binary_search(const Vector *vec, const size_t KEY) {
-  size_t left = 0;
-  size_t right = vec->size;
-  size_t *index = NULL;
+int *binary_search(const Vector *vec, const int KEY) {
+  int left = 0;
+  int right = vec->size;
+  int *index = NULL;
 
   while (left < right) {
-    size_t mid = left + (right - left) / 2;
-    // printf("%zu mid\n", mid);
+    int mid = left + (right - left) / 2;
 
-    if (KEY == *vec->index + (mid * sizeof(size_t))) {
-      index = vec->index + (mid * sizeof(size_t));
+    if (KEY == *vec->index + (mid * sizeof(int))) {
+      index = vec->index + (mid * sizeof(int));
       return index;
     }
 
-    if (KEY > *vec->index + (mid * sizeof(size_t))) {
+    if (KEY > *vec->index + (mid * sizeof(int))) {
       left = mid + 1;
     } else {
       right = mid - 1;

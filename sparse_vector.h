@@ -16,17 +16,17 @@
 
 typedef struct {
   void *data;
-  size_t *index;
-  size_t size;
-  size_t capacity;
-  size_t data_size;
-  size_t *largest_index; // For binary-search.
+  int *index;
+  int size;
+  int capacity;
+  int data_size;
+  int *largest_index; // For binary-search.
 } Vector;
 
-Vector *vectorInit(const size_t DATA_TYPE);
-void *read(const Vector *vec, const size_t KEY);
-void insert(Vector *vec, const size_t KEY, const void *DATA);
-bool remove_data(Vector *vec, const size_t KEY);
+Vector *vectorInit(const int DATA_TYPE);
+void *read(const Vector *vec, const int KEY);
+void insert(Vector *vec, const int KEY, const void *DATA);
+bool remove_data(Vector *vec, const int KEY);
 void freeVector(Vector *vec);
 
 #endif

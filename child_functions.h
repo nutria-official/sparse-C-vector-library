@@ -3,8 +3,8 @@
 
 #include "sparse_vector.h"
 
-size_t *binary_search(const Vector *vec, const size_t KEY);
-bool memory_realloc(Vector *vec, const size_t RESIZE_SIZE,
+int *binary_search(const Vector *vec, const int KEY);
+bool memory_realloc(Vector *vec, const int RESIZE_SIZE,
                     const float RESIZE_AMOUNT);
 bool memory_alloc(void *vec);
 #endif
