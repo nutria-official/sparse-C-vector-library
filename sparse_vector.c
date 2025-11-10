@@ -2,19 +2,19 @@
 #include "main.h"
 #include <string.h>
 
-Vector *vectorInit(int DATA_TYPE) {
+Vector *vectorInit(const size_t DATA_TYPE) {
   Vector *vec = malloc(sizeof(Vector));
-  if (memory_alloc(vec) == false) {
+  if (*(bool *)memory_alloc(vec) == false) {
     return NULL;
   }
   vec->data_size = DATA_TYPE;
   vec->data = malloc(INITIALSIZE * vec->data_size);
-  if (memory_alloc(vec->data) == false) {
+  if (*(bool *)memory_alloc(vec->data) == false) {
     free(vec);
     return NULL;
   }
-  vec->index = malloc(INITIALSIZE * sizeof(int));
-  if (memory_alloc(vec->index) == false) {
+  vec->index = malloc(INITIALSIZE * sizeof(size_t));
+  if (*(bool *)memory_alloc(vec->index) == false) {
     free(vec);
     return NULL;
   }
@@ -23,64 +23,55 @@ Vector *vectorInit(int DATA_TYPE) {
   vec->largest_index = NULL;
   return vec;
 }
-void *read(Vector *vec, int KEY) {
-  int *index = binary_search(vec, KEY);
+void *read(const Vector *vec, const size_t KEY) {
+  size_t *index = linear_search(vec, KEY, 0, vec->size);
   if (index == NULL) {
     perror("Read element does not exist!\n");
   }
-  void *data = vec->data + (*index * vec->data_size);
+  void *data =
+      vec->data + ((index - vec->index) / sizeof(size_t) * vec->data_size);
   return data;
 }
 
-void insert(Vector *vec, int KEY, void *DATA) {
-  int *index = binary_search(vec, KEY);
+void insert(Vector *vec, const size_t KEY, const void *DATA) {
+  size_t *index = linear_search(vec, KEY, 0, vec->size);
   if (index == NULL) { // Checks whether the KEY-index already has memory.
     if (vec->largest_index == NULL || KEY > *vec->largest_index) {
       memcpy((vec->data + (vec->data_size * vec->size)), DATA, vec->data_size);
-      memcpy((vec->index + (sizeof(int) * vec->size)), &KEY, sizeof(int));
-      vec->largest_index = (vec->index + (sizeof(int) * vec->size));
-      int *temp = (vec->index + (sizeof(int) * vec->size));
+      memcpy((vec->index + (sizeof(size_t) * vec->size)), &KEY, sizeof(size_t));
+      vec->largest_index = (vec->index + (sizeof(size_t) * vec->size));
+      size_t *temp = (vec->index + (sizeof(size_t) * vec->size));
     } else {
-      int *temp = vec->index + (sizeof(int) * vec->size);
-      int *push = binary_search(vec, 0);
-      int counter = 0;
-      while (*push < KEY) {
-        counter++;
-        push =
-            binary_search(vec, *(int *)(vec->index + (sizeof(int) * counter)));
+      size_t *push = binary_push_search(vec, KEY, 1, 0, vec->size);
+      for (size_t i = vec->size; i > *push; i--) {
+        memcpy(vec->data + (vec->data_size * i),
+               vec->data + (vec->data_size * i - 1), sizeof(size_t));
       }
-      for (int i = vec->size - 1; i >= *push; i--) {
-        memcpy(vec->data + (vec->data_size * (i + 1)),
-               vec->data + (vec->data_size * i), sizeof(int));
-      }
-      vec->largest_index = vec->largest_index + sizeof(int);
-      // memory_realloc(vec);
+      vec->largest_index += sizeof(size_t);
     }
     vec->size++;
     // memory_realloc(vec, 1, 0.5);
   } else {
-    printf("Index: %d\n", *index);
-    int *temp = vec->index + (sizeof(int) * vec->size);
-    memcpy(vec->data + (vec->data_size * *(int *)(index - vec->index)), DATA,
+    memcpy(vec->data + (vec->data_size * *(size_t *)(index - vec->index)), DATA,
            vec->data_size);
-    memcpy(vec->index + (sizeof(int) * vec->size), &KEY, sizeof(int));
+    memcpy(vec->index + (sizeof(size_t) * vec->size), &KEY, sizeof(size_t));
   }
   return;
 }
 
-bool remove_data(Vector *vec, int KEY) {
-  int *index = binary_search(vec, KEY);
+bool remove_data(Vector *vec, const size_t KEY) {
+  size_t *index = linear_search(vec, KEY, 0, vec->size);
   if (index == NULL) {
     perror("Element does not exist\n");
     return false;
   } else {
     vec->size--;
-    for (int i = *index; i < vec->size; i++) {
+    for (size_t i = index - vec->index; i < vec->size; i++) {
       memcpy(vec->data + (i * vec->data_size),
              vec->data + (i + 1) * vec->data_size, vec->data_size);
 
-      memcpy(vec->index + (i * sizeof(int)), vec->index + (i + 1) * sizeof(int),
-             sizeof(int));
+      memcpy(vec->index + (i * sizeof(size_t)),
+             vec->index + (i + 1) * sizeof(size_t), sizeof(size_t));
     }
     // memory_realloc(vec, RESIZESIZE, RESIZEAMOUNT);
     return true;

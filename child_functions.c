@@ -1,61 +1,79 @@
 #include "main.h"
 
-bool *memory_realloc(Vector *vec, int RESIZE_SIZE, float RESIZE_AMOUNT) {
-  bool *return_value = NULL;
+bool *memory_realloc(Vector *vec, const size_t RESIZE_SIZE,
+                     const float RESIZE_AMOUNT) {
+  static bool return_value = true;
   if (vec->size <= vec->capacity / RESIZE_SIZE) {
     vec->capacity /= RESIZE_AMOUNT + 1;
     void *temp_d = malloc(vec->capacity * vec->data_size);
-    if (memory_alloc(temp_d) == false) {
+    if (*(bool *)memory_alloc(temp_d) == false) {
       return NULL;
     }
     memcpy(temp_d, vec->data, vec->capacity * vec->data_size);
-    void *temp_i = malloc(vec->capacity * sizeof(int));
-    if (memory_alloc(temp_i) == false) {
+    void *temp_i = malloc(vec->capacity * sizeof(size_t));
+    if (*(bool *)memory_alloc(temp_i) == false) {
       return NULL;
     }
-    memcpy(temp_i, vec->index, vec->capacity * sizeof(int));
+    memcpy(temp_i, vec->index, vec->capacity * sizeof(size_t));
     free(vec->data);
     free(vec->index);
     vec->data = temp_d;
     vec->index = temp_i;
-    return true;
+    return_value = true;
+    return &return_value;
   }
-  return true;
+  return_value = false;
+  return &return_value;
 }
 
-int *binary_search(Vector *vec, int KEY) {
-  int left = 0;
-  int right = vec->size;
-
-  while (left < right) {
-    int mid = left + (right - left) / 2;
-    if (KEY == *(int *)(vec->index + (mid * sizeof(int)))) {
-      return vec->index + (mid * sizeof(int));
+size_t *binary_search(const Vector *vec, const size_t KEY, size_t lowest,
+                      size_t highest) {
+  while (lowest < highest) {
+    size_t middle = lowest + (highest - lowest) / 2;
+    if (KEY == *(size_t *)(vec->index + (middle * sizeof(size_t)))) {
+      return vec->index + (middle * sizeof(size_t));
     }
-    if (KEY > *(int *)(vec->index + (mid * sizeof(int)))) {
-      left = mid + 1;
+    if (KEY > *(size_t *)(vec->index + (middle * sizeof(size_t)))) {
+      lowest = middle + 1;
     } else {
-      right = mid - 1;
+      highest = middle - 1;
     }
   }
   return NULL;
 }
+size_t *binary_push_search(const Vector *vec, const size_t KEY,
+                           const int OFFSET, size_t lowest, size_t highest) {
+  while (lowest < highest) {
+    size_t middle = lowest + (highest - lowest) / 2;
+    if (KEY == *(size_t *)(vec->index + (middle * sizeof(size_t)))) {
+      return vec->index + (middle * sizeof(size_t));
+    }
+    if (KEY > *(size_t *)(vec->index + (middle * sizeof(size_t)))) {
+      lowest = middle + 1;
+    } else {
+      highest = middle - 1;
+    }
+  }
+  return vec->index + ((lowest + 1) * sizeof(size_t));
+}
 
-int *linear_search(Vector *vec, int KEY) {
-  int *index = NULL;
-  for (int i = 0; i < vec->size; i++) {
-    if (KEY == *(int *)(vec->index + (i * sizeof(int)))) {
-      index = vec->index + (i * sizeof(int));
+size_t *linear_search(const Vector *vec, const size_t KEY, size_t lowest,
+                      size_t highest) {
+  size_t *index = NULL;
+  for (size_t i = lowest; i < highest; i++) {
+    if (KEY == *(size_t *)(vec->index + (i * sizeof(size_t)))) {
+      index = vec->index + (i * sizeof(size_t));
       return index;
     }
   }
   return index;
 }
 
-bool *memory_alloc(void *vec) {
-  if (vec == NULL) {
+bool *memory_alloc(const void *pointer) {
+  static bool return_value = true;
+  if (pointer == NULL) {
     perror("Memory allocation failed.\n");
     return NULL;
   }
-  return true;
+  return &return_value;
 }
