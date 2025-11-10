@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define INITIALSIZE 2
+#define INITIALSIZE 100
 #define RESIZESIZE                                                             \
   4 // The proportion size at which remove() resizes the allocated memory.
 #define RESIZEAMOUNT                                                           \
@@ -23,10 +23,10 @@ typedef struct {
   int *largest_index; // For binary-search.
 } Vector;
 
-Vector *vectorInit(const int DATA_TYPE);
-void *read(const Vector *vec, const int KEY);
-void insert(Vector *vec, const int KEY, const void *DATA);
-bool remove_data(Vector *vec, const int KEY);
+Vector *vectorInit(int DATA_TYPE);
+void *read(Vector *vec, int KEY);
+void insert(Vector *vec, int KEY, void *DATA);
+bool remove_data(Vector *vec, int KEY);
 void freeVector(Vector *vec);
 
 #endif

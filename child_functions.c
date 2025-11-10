@@ -1,40 +1,38 @@
 #include "main.h"
 
-bool memory_realloc(Vector *vec, const int RESIZE_SIZE,
-                    const float RESIZE_AMOUNT) {
+bool *memory_realloc(Vector *vec, int RESIZE_SIZE, float RESIZE_AMOUNT) {
+  bool *return_value = NULL;
   if (vec->size <= vec->capacity / RESIZE_SIZE) {
-    vec->capacity = ceil(vec->capacity / RESIZE_AMOUNT);
+    vec->capacity /= RESIZE_AMOUNT + 1;
     void *temp_d = malloc(vec->capacity * vec->data_size);
-    void *temp_i = malloc(vec->capacity * sizeof(int));
+    if (memory_alloc(temp_d) == false) {
+      return NULL;
+    }
     memcpy(temp_d, vec->data, vec->capacity * vec->data_size);
+    void *temp_i = malloc(vec->capacity * sizeof(int));
+    if (memory_alloc(temp_i) == false) {
+      return NULL;
+    }
     memcpy(temp_i, vec->index, vec->capacity * sizeof(int));
     free(vec->data);
     free(vec->index);
     vec->data = temp_d;
     vec->index = temp_i;
-
-    if (memory_alloc(temp_d) * memory_alloc(temp_i) == false) {
-      return false;
-    }
     return true;
   }
   return true;
 }
 
-int *binary_search(const Vector *vec, const int KEY) {
+int *binary_search(Vector *vec, int KEY) {
   int left = 0;
   int right = vec->size;
-  int *index = NULL;
 
   while (left < right) {
     int mid = left + (right - left) / 2;
-
-    if (KEY == *vec->index + (mid * sizeof(int))) {
-      index = vec->index + (mid * sizeof(int));
-      return index;
+    if (KEY == *(int *)(vec->index + (mid * sizeof(int)))) {
+      return vec->index + (mid * sizeof(int));
     }
-
-    if (KEY > *vec->index + (mid * sizeof(int))) {
+    if (KEY > *(int *)(vec->index + (mid * sizeof(int)))) {
       left = mid + 1;
     } else {
       right = mid - 1;
@@ -43,10 +41,21 @@ int *binary_search(const Vector *vec, const int KEY) {
   return NULL;
 }
 
-bool memory_alloc(void *vec) {
+int *linear_search(Vector *vec, int KEY) {
+  int *index = NULL;
+  for (int i = 0; i < vec->size; i++) {
+    if (KEY == *(int *)(vec->index + (i * sizeof(int)))) {
+      index = vec->index + (i * sizeof(int));
+      return index;
+    }
+  }
+  return index;
+}
+
+bool *memory_alloc(void *vec) {
   if (vec == NULL) {
     perror("Memory allocation failed.\n");
-    return false;
+    return NULL;
   }
   return true;
 }

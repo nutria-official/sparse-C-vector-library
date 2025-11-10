@@ -1,7 +1,8 @@
+#include "child_functions.h"
 #include "main.h"
 #include <string.h>
 
-Vector *vectorInit(const int DATA_TYPE) {
+Vector *vectorInit(int DATA_TYPE) {
   Vector *vec = malloc(sizeof(Vector));
   if (memory_alloc(vec) == false) {
     return NULL;
@@ -17,46 +18,57 @@ Vector *vectorInit(const int DATA_TYPE) {
     free(vec);
     return NULL;
   }
-  vec->capacity = INITIALSIZE;
+  vec->capacity = INITIALSIZE - 1;
   vec->size = 0;
-  vec->largest_index = vec->index;
-  int temp = 0;
-  memcpy(vec->largest_index, &temp, sizeof(int));
+  vec->largest_index = NULL;
   return vec;
 }
-void *read(const Vector *vec, const int KEY) {
+void *read(Vector *vec, int KEY) {
   int *index = binary_search(vec, KEY);
+  if (index == NULL) {
+    perror("Read element does not exist!\n");
+  }
   void *data = vec->data + (*index * vec->data_size);
   return data;
 }
 
-void insert(Vector *vec, const int KEY, const void *DATA) {
+void insert(Vector *vec, int KEY, void *DATA) {
   int *index = binary_search(vec, KEY);
-  printf("huh = %lu\n", *(int *)vec->index + (sizeof(int) * vec->size));
   if (index == NULL) { // Checks whether the KEY-index already has memory.
-    printf("KEY = %d\n", KEY);
-
-    if (KEY > *vec->largest_index) {
-
-      memcpy(vec->data + (vec->data_size * vec->size), DATA, vec->data_size);
-      memcpy(vec->index + (sizeof(int) * vec->size), &KEY, sizeof(int));
+    if (vec->largest_index == NULL || KEY > *vec->largest_index) {
+      memcpy((vec->data + (vec->data_size * vec->size)), DATA, vec->data_size);
+      memcpy((vec->index + (sizeof(int) * vec->size)), &KEY, sizeof(int));
       vec->largest_index = (vec->index + (sizeof(int) * vec->size));
-
+      int *temp = (vec->index + (sizeof(int) * vec->size));
     } else {
-      printf("what = %lu\n", *(int *)vec->index + (sizeof(int) * vec->size));
-      // Make this later.
+      int *temp = vec->index + (sizeof(int) * vec->size);
+      int *push = binary_search(vec, 0);
+      int counter = 0;
+      while (*push < KEY) {
+        counter++;
+        push =
+            binary_search(vec, *(int *)(vec->index + (sizeof(int) * counter)));
+      }
+      for (int i = vec->size - 1; i >= *push; i--) {
+        memcpy(vec->data + (vec->data_size * (i + 1)),
+               vec->data + (vec->data_size * i), sizeof(int));
+      }
+      vec->largest_index = vec->largest_index + sizeof(int);
+      // memory_realloc(vec);
     }
     vec->size++;
-    memory_realloc(vec, 1, 0.5);
+    // memory_realloc(vec, 1, 0.5);
   } else {
-    printf("skibidi? = %lu\n", *(int *)vec->index + (sizeof(int) * vec->size));
-    memcpy(vec->data + (vec->data_size * *index), DATA, vec->data_size);
+    printf("Index: %d\n", *index);
+    int *temp = vec->index + (sizeof(int) * vec->size);
+    memcpy(vec->data + (vec->data_size * *(int *)(index - vec->index)), DATA,
+           vec->data_size);
     memcpy(vec->index + (sizeof(int) * vec->size), &KEY, sizeof(int));
   }
   return;
 }
 
-bool remove_data(Vector *vec, const int KEY) {
+bool remove_data(Vector *vec, int KEY) {
   int *index = binary_search(vec, KEY);
   if (index == NULL) {
     perror("Element does not exist\n");
@@ -70,7 +82,7 @@ bool remove_data(Vector *vec, const int KEY) {
       memcpy(vec->index + (i * sizeof(int)), vec->index + (i + 1) * sizeof(int),
              sizeof(int));
     }
-    memory_realloc(vec, RESIZESIZE, RESIZEAMOUNT);
+    // memory_realloc(vec, RESIZESIZE, RESIZEAMOUNT);
     return true;
   }
 }
