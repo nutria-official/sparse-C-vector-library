@@ -7,12 +7,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define INITIALSIZE 100
-#define RESIZESIZE                                                             \
-  4 // The proportion size at which remove() resizes the allocated memory.
-#define RESIZEAMOUNT                                                           \
-  2 // The proportion in which the vector gets resized when RESIZESIZE is
-    // reached.
+#define INITIALSIZE 1
+#define RESIZESIZE 4
+#define RESIZEAMOUNT 2
+typedef enum {
+  NO_ERROR,
+  ERROR,
+  MEMORY_ALLOCATION_FAIL,
+  MEMORY_REALLOCATION_FAIL,
+} ErrorCodes;
 
 typedef struct {
   void *data;
@@ -20,13 +23,13 @@ typedef struct {
   size_t size;
   size_t capacity;
   size_t data_size;
-  size_t *largest_index; // For binary-search.
+  size_t *largest_index;
 } Vector;
 
 Vector *vectorInit(const size_t DATA_TYPE);
 void *read(const Vector *vec, const size_t KEY);
-void insert(Vector *vec, const size_t KEY, const void *DATA);
-bool remove_data(Vector *vec, const size_t KEY);
-void freeVector(Vector *vec);
+ErrorCodes insert(Vector *vec, const size_t KEY, const void *DATA);
+ErrorCodes remove_data(Vector *vec, const size_t KEY);
+ErrorCodes freeVector(Vector *vec);
 
 #endif
