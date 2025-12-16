@@ -1,35 +1,75 @@
 #include "sparse_vector.h"
+#include <stdlib.h>
 
-ErrorCodes memory_realloc(Vector *vec, const float RESIZE_SIZE,
-                          const float RESIZE_AMOUNT) {
-  // printf("vec->size = %f\n", vec->size);
-  // printf("vec->capacity / RESIZE_SIZE = %f\n", vec->capacity / RESIZE_SIZE);
-  float size = vec->size;
-  float capacity = vec->capacity;
-  printf("capacity / RESIZE_SIZE = %f\n", capacity / RESIZE_SIZE);
-  if (size <= capacity / RESIZE_SIZE) {
-    capacity /= RESIZE_AMOUNT;
-    printf("capacity = %f\n", capacity);
-    vec->capacity = capacity;
-    printf("vec->capacity = %zu\n", vec->capacity);
-    void *temp_d = malloc(vec->capacity * vec->data_size);
-    printf("temp_d = %p\n", temp_d);
+int memory_increase(Vector *vec) {
+  if (vec->size == vec->capacity) {
+    vec->capacity *= 2;
+    int *temp_i = realloc(vec->index, vec->capacity * sizeof(size_t));
+    if (temp_i == NULL) {
+      return MEMORY_REALLOCATION_FAIL;
+
+    } else {
+      vec->largest_index = vec->index + sizeof(size_t) * (vec->size - 1);
+    }
+    size_t *temp_d = realloc(vec->data, vec->capacity * vec->data_size);
     if (temp_d == NULL) {
       return MEMORY_REALLOCATION_FAIL;
     }
-    memcpy(temp_d, vec->data, vec->capacity * vec->data_size);
-    void *temp_i = malloc(vec->capacity * sizeof(size_t));
-    printf("Hi\n");
+  }
+  return NO_ERROR;
+}
+
+int memory_decrease(Vector *vec) {
+  float capacity = vec->capacity;
+  size_t new_capacity = capacity / RESIZESIZE;
+  if (vec->size <= new_capacity) {
+    vec->capacity = new_capacity;
+    size_t *temp_d = realloc(vec->data, vec->capacity * vec->data_size);
+    if (temp_d == NULL) {
+      return MEMORY_REALLOCATION_FAIL;
+    }
+    size_t *temp_i = realloc(vec->index, vec->capacity * sizeof(size_t));
     if (temp_i == NULL) {
       return MEMORY_REALLOCATION_FAIL;
     }
-    memcpy(temp_i, vec->index, vec->capacity * sizeof(size_t));
-    printf("Hi\n");
-    free(vec->data);
-    free(vec->index);
+  }
+  return NO_ERROR;
+}
+
+int memory_realloc(Vector *vec, const float RESIZE_SIZE,
+                   const float RESIZE_AMOUNT) {
+  printf("bam\n");
+  float size = vec->size;
+  float capacity = vec->capacity;
+  printf("vec->capacity / RESIZE_AMOUNT = %f\n", vec->capacity / RESIZE_SIZE);
+  if (size == capacity / RESIZE_SIZE) {
+    capacity /= RESIZE_AMOUNT;
+    vec->capacity = capacity;
+
+    printf("capacity = %zu\n", vec->capacity);
+
+    printf("vec->capacity * vec->data_size = %zu\n",
+           vec->capacity * vec->data_size);
+    void *temp_d = realloc(vec->data, vec->capacity * vec->data_size);
+    if (temp_d == NULL) {
+      return MEMORY_REALLOCATION_FAIL;
+    }
     vec->data = temp_d;
+
+    printf("sizeof(size_t) = %zu\n", sizeof(size_t));
+    printf("vec->capacity * sizeof(size_t) = %zu\n",
+           vec->capacity * sizeof(size_t));
+
+    return 1;
+    void *temp_i = realloc(vec->index, vec->capacity * sizeof(size_t));
+    //  return 1;
+    if (temp_i == NULL) {
+      return MEMORY_REALLOCATION_FAIL;
+    }
+
     vec->index = temp_i;
-    printf("Hi\n");
+    vec->largest_index = vec->index + (vec->size - 1) * sizeof(size_t);
+    printf("vec->largest_index = %zu\n", *vec->largest_index);
   }
   return NO_ERROR;
 }

@@ -8,9 +8,6 @@ Vector *vectorInit(const size_t DATA_TYPE) {
     return NULL;
   }
   vec->data_size = DATA_TYPE;
-  printf("vec->data_size: %zu\n", vec->data_size);
-  printf("INITIALSIZE: %d\n", INITIALSIZE);
-  printf("Allocated memory: %zu\n", INITIALSIZE * vec->data_size);
   vec->data = malloc(INITIALSIZE * vec->data_size);
   if (vec->data == NULL) {
     free(vec);
@@ -23,11 +20,11 @@ Vector *vectorInit(const size_t DATA_TYPE) {
   }
 
   vec->capacity = INITIALSIZE;
-  printf("vec->capacity: %zu\n", vec->capacity);
   vec->size = 0;
   vec->largest_index = NULL;
   return vec;
 }
+
 void *read(const Vector *vec, const size_t KEY) {
   size_t *index = linear_search(vec, KEY);
   if (index == NULL) {
@@ -37,7 +34,7 @@ void *read(const Vector *vec, const size_t KEY) {
   }
 }
 
-ErrorCodes insert(Vector *vec, const size_t KEY, const void *DATA) {
+int insert(Vector *vec, const size_t KEY, const void *DATA) {
   size_t *index = linear_search(vec, KEY);
   if (index == NULL) {
     if (vec->largest_index == NULL || KEY > *vec->largest_index) {
@@ -59,10 +56,12 @@ ErrorCodes insert(Vector *vec, const size_t KEY, const void *DATA) {
     }
     vec->largest_index = (vec->index + sizeof(size_t) * vec->size);
     vec->size++;
-
-    if (memory_realloc(vec, 1, 0.5) == MEMORY_REALLOCATION_FAIL) {
+    if (memory_increase(vec) == MEMORY_REALLOCATION_FAIL) {
       return MEMORY_REALLOCATION_FAIL;
-    };
+    }
+    // if (memory_realloc(vec, 1, 0.5) == MEMORY_REALLOCATION_FAIL) {
+    //   return MEMORY_REALLOCATION_FAIL;
+    // };
   } else {
     memcpy(vec->data + (index - vec->index) / sizeof(size_t) * vec->data_size,
            DATA, vec->data_size);
@@ -71,7 +70,7 @@ ErrorCodes insert(Vector *vec, const size_t KEY, const void *DATA) {
   return NO_ERROR;
 }
 
-ErrorCodes remove_data(Vector *vec, const size_t KEY) {
+int remove_data(Vector *vec, const size_t KEY) {
   size_t *index = linear_search(vec, KEY);
   if (index == NULL) {
     return ERROR;
@@ -89,7 +88,7 @@ ErrorCodes remove_data(Vector *vec, const size_t KEY) {
   }
 }
 
-ErrorCodes freeVector(Vector *vec) {
+int freeVector(Vector *vec) {
   if (vec == NULL) {
     return ERROR;
   }

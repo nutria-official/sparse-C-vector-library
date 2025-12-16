@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define INITIALSIZE 1
+#define INITIALSIZE 2
 #define RESIZESIZE 4
 #define RESIZEAMOUNT 2
 typedef enum {
@@ -28,8 +28,8 @@ typedef struct {
 
 Vector *vectorInit(const size_t DATA_TYPE);
 void *read(const Vector *vec, const size_t KEY);
-ErrorCodes insert(Vector *vec, const size_t KEY, const void *DATA);
-ErrorCodes remove_data(Vector *vec, const size_t KEY);
-ErrorCodes freeVector(Vector *vec);
+int insert(Vector *vec, const size_t KEY, const void *DATA);
+int remove_data(Vector *vec, const size_t KEY);
+int freeVector(Vector *vec);
 
 #endif
